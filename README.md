@@ -52,8 +52,26 @@ Fyll inn følgende detaljer:
   
 Klikk på "Create".
 Da vil du få opp en .cs fil med en blob-funksjon, som ser slik ut:
+```
+using System;
+using System.IO;
+using Microsoft.Azure.WebJobs;
+using Microsoft.Azure.WebJobs.Host;
+using Microsoft.Extensions.Logging;
 
-----Legge til default blobtrigger
+namespace My.Function
+{
+    public class BlobTrigger1
+    {
+        [FunctionName("BlobTrigger1")]
+        public void Run([BlobTrigger("samples-workitems/{name}", Connection = "MyBlobAppStorageConnection")]Stream myBlob, string name, ILogger log)
+        {
+            log.LogInformation($"C# Blob trigger function Processed blob\n Name:{name} \n Size: {myBlob.Length} Bytes");
+        }
+    }
+}
+```
+Dersom du ønsker det, kan du tilpasse meldingen inne i `log.LogInformation`-funksjonen, da dette er meldingen som vil vises i loggen når funksjonen utløses.
 
 Nå kan du igjen trykke på the oransje lynet ved siden av "Workspace" og deretter klikke på "Deploy to Function App". Velg deretter den nylig opprettede funksjonsappen når du blir bedt om det. Klikk på deploy. 
 
@@ -69,6 +87,24 @@ I terminalen i VS Code kjører du følgende kommando:
 az functionapp config appsettings set --name <ditt_funskjonsapp_navn> --resource-group <din_ressursgruppe> --settings MyBlobAppStorageConnection='<din_tilkoblingsstreng>'
 ```
 Erstatt `<ditt_funskjonsapp_navn>` med navnet på funksjonsappen din, `<din_ressursgruppe>` med verdien for ressursgruppen du tidligere kopierte, og <`<din_tilkoblingsstreng>` med tilkoblingsstrengen du tidligere kopierte.
+
+### Mulige feilmeldinger:
+
+ Hvis du får opp feilmelding på at du ikke har autorisasjon til å utføre kommandoen, kjører du følgende kommando før du kjører den forrige kommandoen igjen:
+
+```
+az login
+```
+ Hvis du nå får feilmelding på at ressursgruppen ikke blir funnet, må du sette riktig abonnment aktivt før du kjører den første kommandoen igjen.
+  Dette gjøres ved å kjøre følgende kommando:
+```
+ az account set --subscription mysubscription
+```
+Endre `mysubscription` med navn eller ID på abonnementet, dette finner du i Azure portalen ved å gå inn på function appen og kopiere ID under «Subscription ID» eller ved å kjøre følgende kommando: 
+```
+az account list --output table
+```
+Her må du finne riktig abonnement, og kopiere ID-en.
 
 # Oppsett av kode for opplasting av bilder til Azure Blob Storage
 
@@ -103,9 +139,53 @@ Navigerer til VS Code-prosjektet du har opprettet og lag en mappe kalt `template
 ```
 Denne koden oppretter en enkel HTML-side som lar brukere laste opp bildefiler ved å velge en fil fra sin enhet og deretter sende filen til en server ved å trykke på "Upload"-knappen.
 
-Du kan også gjøre koden litt mer komplisert for å vise bilde som skal lastes opp:
+### Valgfritt
 
------ Legg til kode her
+Du kan også gjøre koden litt mer komplisert for å vise bildet som skal lastes opp. 
+
+I `<body>`-delen av HTML-filen, kan du legge til følgende:
+
+Først, opprett en `<div>` for å vise det valgte bildet som skal lastes opp. Deretter kan du lage en annen `<div>` for å vise navnene på bildene som er lagret i Azure Blob Storage.
+```
+<div id="imageContainer">
+        <h2>Uploaded Image</h2>
+        <img id="uploadedImage" src="#" alt="Uploaded Image" style="display:none; max-width: 400px;">
+    </div>
+
+<div id="blobImages">
+        <h2>Names of Files in Azure Blob Storage</h2>
+        <ul id="blobList">
+            {% for blobName in blob_names %}
+            <li>{{ blobName }}</li>
+            {% endfor %}
+        </ul>
+</div>
+```
+Deretter lager du følgende `<script>`, som inneholder en funksjon som forhåndsviser bildet du har valgt:
+```
+ <script>
+        function previewImage() {
+            var input = document.getElementById('imageInput');
+            var imageContainer = document.getElementById('imageContainer');
+            var uploadedImage = document.getElementById('uploadedImage');
+
+            if (input.files && input.files[0]) {
+                var reader = new FileReader();
+
+                reader.onload = function(e) {
+                    uploadedImage.src = e.target.result;
+                    uploadedImage.style.display = 'block';
+                };
+
+                reader.readAsDataURL(input.files[0]);
+            } else {
+                uploadedImage.style.display = 'none';
+            }
+        }
+        document.getElementById('imageInput').addEventListener('change', previewImage);
+    </script>
+```
+
 
 ## YAML-fil
 
@@ -114,11 +194,11 @@ Du må også opprette en yaml-fil i prosjekt-mappen (ikke templates-mappen), kal
 ```yaml
 {
   "azure_storage_connectionstring": "din_azure_connection_string",
-  "images_container_name": "din_container_navn"
+  "images_container_name": "ditt_container_navn"
 }
 ```
 
-Her må du endre `"din_azure_connection_string"` og `"din_container_navn"` til de faktiske verdiene som passer for ditt prosjekt. `"din_azure_connection_string"` er verdien du tidligere lagret fra Access Key, og `"din_container_navn"` er navnet på containeren som du opprettet tidligere (samples-workitems).
+Her må du endre `"din_azure_connection_string"` og `"ditt_container_navn"` til de faktiske verdiene som passer for ditt prosjekt. `"din_azure_connection_string"` er verdien du tidligere lagret fra Access Key, og `"ditt_container_navn"` er navnet på containeren som du opprettet tidligere (samples-workitems).
 
 Sørg også for at du har riktig mappestruktur og filnavn for moduler og konfigurasjonsfiler.
 
@@ -265,22 +345,26 @@ ENDRE HER...
 
 ## Teste Blob Trigger funksjonen
 
-For å kjøre blob trigger funksjonen kan du skrive følgende kommando i VS Code terminalen. Da vil funksjonen kjøres i Azure Functions Core Tools.
-----Sjekk om det er mulig å åpne loggen også
+For å kjøre blob trigger funksjonen kan du skrive følgende kommando i VS Code terminalen. Da vil funksjonen kjøres i Azure Functions Core Tools. Her vil du få beskjed om at build succeeded om alt er som det skal, og du vil få ut en log på når funksjonen blir utløst. 
+
 ```
  func start
 ```
+Om det skulle dukke opp noen feilmeldinger på autentisering, så dobbeltsjekker du at det er lagt inn riktig Connection String i `local.settings.json`-filen.
 
-Her vil du få beskjed om at build succeeded om alt er som det skal, og du vil få ut en log på når funksjonen blir utløst. 
+Alternativt kan du åpne loggen ved å klikke på følgende i venstre meny vindu: "Function App" > "<navn_på_din_app>" > "Logs" > "Connect to Log Streams...".
+Da vil du under "Output" få ut en log på når funksjonen er utløst. 
 
-Sørg for at du har aktivert blob trigger funksjonen samtidig som du kjører Flask-applikasjonen. Last deretter opp et bilde fra url-en, mens du overvåker logen fra blob-funksjonen. Her vil du nå få følgende beskjed om at funksjonen er aktivert, og du vil se meldingen som er skrevet i funksjonen.  
-
----Legg til bilde her
+Sørg for at du har aktivert blob trigger funksjonen samtidig som du kjører Flask-applikasjonen. Last deretter opp et bilde i url-en, mens du overvåker logen fra blob-funksjonen. Her vil du nå få beskjed om at funksjonen er aktivert, og du vil se meldingen som er skrevet i blob funksjonen. Hvis du ikke endret på default-meldingen vil følgende melding vises:
+"C# Blob trigger function Processed blob
+ Name: <navn_på_fil>
+ Size: <antall_bytes> Bytes"
 
 ## Endre Azure funksjonen
 
 Nå kan du selv utforske hvordan dette fungerer ved å endre Azure funksjonen som du ønsker. For å gjøre dette, navigerer du til prosjektmappen i VS Code, og deretter til filen som heter BlobTrigger1.cs (hvis du har kalt funksjonen BlobTrigger1). Rediger denne filen for å gjøre endringer i funksjonen. Når du er tilfreds med redigeringen, klikker du på Azure-ikonet i venstre meny, deretter på det oransje lynsymbolet ved siden av "Workspace," og deretter velger "Deploy to function app." Velg deretter den opprettede appen din.
 
 Her er noen forslag til ting du kan prøve:
-- Legg til timestamp: Legg til tidspunkt for når bildene blir lastet opp. 
-- Endre filtype: Endre Blob Trigger-funksjonen for å reagere på en bestemt type filer. For eksempel kan du legge til en feilmelding på bestemte filtyper som .jpg, .png eller .pdf.
+- Legg til tidspunkt for når bildene blir lastet opp. 
+- Endre Blob Trigger-funksjonen for å reagere på en bestemt type filer. For eksempel kan du legge til en feilmelding på bestemte filtyper som .jpg, .png eller .pdf.
+- Endre Blob Trigger-funksjonen for å reagere på en bestemt størrelse på fil. For eksempel legge til en feilmelding når filer over en viss størrelse blir langt inn. 
