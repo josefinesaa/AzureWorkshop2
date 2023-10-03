@@ -15,11 +15,12 @@ Før du starter, må du sørge for at du har følgende krav oppfylt:
 - En Azure-konto.
 - Visual Studio Code installert.
 - Azure Functions-utvidelse i VS Code.
-- Azure CLI (https://learn.microsoft.com/en-us/cli/azure/install-azure-cli) 
+- Azure CLI (https://learn.microsoft.com/en-us/cli/azure/install-azure-cli).
+- Azure Functions Core Tools (https://github.com/Azure/azure-functions-core-tools).
 
 # Opprett en Function App 
 
-Først opprett du et nytt prosjekt i Visual Studio Code og åpner prosjektet.
+Først oppretter du et nytt prosjekt i Visual Studio Code og åpner prosjektet.
 
 Deretter klikker du på Azure-symbolet i menyen til venstre. 
 
@@ -34,7 +35,9 @@ Klikk på "Create" for å opprette funksjonsappen i Azure.
 
 ## Azure Funtion - Blob Trigger
 
-Ved siden av "Workspace", klikk på "Create Function" (symbol med et oransjest lyn).
+Nå skal du lage en Azure funksjon i funksjonsappen du akkuratt opprettet. 
+
+Dette gjør du ved å klikke på "Create Function" (symbolet med det oransje lynet), ved siden av "Workspace".
 
 Fyll inn følgende detaljer:
 
@@ -56,21 +59,20 @@ Nå kan du igjen trykke på the oransje lynet ved siden av "Workspace" og derett
 
 Besøk Azure-portalen (https://portal.azure.com/), og sørg for at ressursene du opprettet er synlige under riktig abonnement.
 
-Gå inn på Storage-Accounten som er laget tilknyttet funksjonapplikasjonen du har opprettet (du finner den under "All Resources" fra forsiden). Under "Overview" ser du en verdi under "Resource group", som du kopierer og lagrer til senere. Deretter i venstre meny går du inn i "Access Key" og under "Connection String" så kopierer du verdien og lagrer også denne til senere. 
+I Azure portalen går du inn på Storage-Accounten som er laget tilknyttet funksjonapplikasjonen du har opprettet (du finner den under "All Resources" fra forsiden). Under "Overview" ser du en verdi under "Resource group", som du kopierer og lagrer til senere. Deretter i venstre meny går du inn i "Access Key" og under "Connection String" så kopierer du verdien og lagrer også denne til senere. 
 
-Navigerer så til "Containers" i venstre meny og lag en ny container kalt "samples-workitems". 
+Naviger så til "Containers" i venstre meny og lag en ny container kalt "samples-workitems". 
 
 I terminalen i VS Code kjører du følgende kommando: 
 
 ```
 az functionapp config appsettings set --name <ditt_funskjonsapp_navn> --resource-group <din_ressursgruppe> --settings MyBlobAppStorageConnection='<din_tilkoblingsstreng>'
 ```
-Bytt ut .... ... ... 
-
+Erstatt `<ditt_funskjonsapp_navn>` med navnet på funksjonsappen din, `<din_ressursgruppe>` med verdien for ressursgruppen du tidligere kopierte, og <`<din_tilkoblingsstreng>` med tilkoblingsstrengen du tidligere kopierte.
 
 # Oppsett av kode for opplasting av bilder til Azure Blob Storage
 
-Nå skal vi sette opp kode for en web applikasjon der man kan laste opp bilder til den opprettede Azure Blob Storagen. 
+Nå skal vi sette opp kode for en web applikasjon der man kan laste opp bilder til Azure Blob Storage. 
 
 Først kjører du følgende kommandoer i terminalen for å installere Flask og Azure Storage Blob SDK, og YAML.
 
@@ -83,7 +85,7 @@ pip install PyYAML
 
 ## HTML-fil
 
-Navigerer til VS Code-prosjektet og lag en mappe kalt `templates`. I denne mappen oppretter du en html-fil kalt `index.html`, som inneholder følgende kode:
+Navigerer til VS Code-prosjektet du har opprettet og lag en mappe kalt `templates`. I denne mappen oppretter du en html-fil kalt `index.html`, som inneholder følgende kode:
 ```
 <!DOCTYPE html>
 <html>
@@ -101,7 +103,9 @@ Navigerer til VS Code-prosjektet og lag en mappe kalt `templates`. I denne mappe
 ```
 Denne koden oppretter en enkel HTML-side som lar brukere laste opp bildefiler ved å velge en fil fra sin enhet og deretter sende filen til en server ved å trykke på "Upload"-knappen.
 
-## LEGGE TIL HTML KODE FOR Å VISE BILDE
+Du kan også gjøre koden litt mer komplisert for å vise bilde som skal lastes opp:
+
+----- Legg til kode her
 
 ## YAML-fil
 
@@ -114,7 +118,7 @@ Du må også opprette en yaml-fil i prosjekt-mappen (ikke templates-mappen), kal
 }
 ```
 
-Her må du endre `"din_azure_connection_string"` og `"din_container_navn"` til de faktiske verdiene som passer for ditt prosjekt. `"din_azure_connection_string"` er verdien du tidligere lagret fra Access Key, og `"din_container_navn"` er navnet på containeren som du opprettet i første steg (samples-workitems).
+Her må du endre `"din_azure_connection_string"` og `"din_container_navn"` til de faktiske verdiene som passer for ditt prosjekt. `"din_azure_connection_string"` er verdien du tidligere lagret fra Access Key, og `"din_container_navn"` er navnet på containeren som du opprettet tidligere (samples-workitems).
 
 Sørg også for at du har riktig mappestruktur og filnavn for moduler og konfigurasjonsfiler.
 
@@ -252,7 +256,7 @@ if __name__ == '__main__':
 
 ## Kjøre kode
 
-For å kjøre python-koden må du kjøre denne kommandoen. Kontroller at du er i samme mappe som app.py-filen. Som ouput vil du få opp en url i terminalen som vil vise Flask-applikasjonen der du kan laste opp bilder.
+For å kjøre python-koden må du kjøre følgende kommando. Kontroller at du er i samme mappe som app.py-filen. Som ouput vil du få opp en url i terminalen som vil vise Flask-applikasjonen der du kan laste opp bilder.
 
 ```
  python -m flask run --no-debug
@@ -261,11 +265,22 @@ ENDRE HER...
 
 ## Teste Blob Trigger funksjonen
 
-Kontroller at du har aktivert blobtrigger-funksjonen i Azure portalen. Dette gjør du ved å følge steget "Turn on your blob trigger" i guiden gitt tidligere (https://learn.microsoft.com/en-us/training/modules/execute-azure-function-with-triggers/8-create-blob-trigger).
+For å kjøre blob trigger funksjonen kan du skrive følgende kommando i VS Code terminalen. Da vil funksjonen kjøres i Azure Functions Core Tools.
+----Sjekk om det er mulig å åpne loggen også
+```
+ func start
+```
 
-Nå er du klar for å teste at funksjonen fungerer som den skal.
-Gå inn i url-en til Flask-applikasjonen (sørg for at den er oppe og kjører), og last opp et bilde her. Når du får beskjed om at bildet er lastet opp, går du tilbake til blob funksjonen i Azure-portalen og nå vil du se at en blob trigger er utført. 
+Her vil du få beskjed om at build succeeded om alt er som det skal, og du vil få ut en log på når funksjonen blir utløst. 
 
-Nå kan du selv utforske litt hvordan dette fungerer ved å endre 'run.csx' filen som du ønsker. Her er noen forslag til ting du kan prøve:
+Sørg for at du har aktivert blob trigger funksjonen samtidig som du kjører Flask-applikasjonen. Last deretter opp et bilde fra url-en, mens du overvåker logen fra blob-funksjonen. Her vil du nå få følgende beskjed om at funksjonen er aktivert, og du vil se meldingen som er skrevet i funksjonen.  
+
+---Legg til bilde her
+
+## Endre Azure funksjonen
+
+Nå kan du selv utforske hvordan dette fungerer ved å endre Azure funksjonen som du ønsker. For å gjøre dette, navigerer du til prosjektmappen i VS Code, og deretter til filen som heter BlobTrigger1.cs (hvis du har kalt funksjonen BlobTrigger1). Rediger denne filen for å gjøre endringer i funksjonen. Når du er tilfreds med redigeringen, klikker du på Azure-ikonet i venstre meny, deretter på det oransje lynsymbolet ved siden av "Workspace," og deretter velger "Deploy to function app." Velg deretter den opprettede appen din.
+
+Her er noen forslag til ting du kan prøve:
 - Legg til timestamp: Legg til tidspunkt for når bildene blir lastet opp. 
 - Endre filtype: Endre Blob Trigger-funksjonen for å reagere på en bestemt type filer. For eksempel kan du legge til en feilmelding på bestemte filtyper som .jpg, .png eller .pdf.
