@@ -77,7 +77,7 @@ Nå kan du igjen trykke på the oransje lynet ved siden av "Workspace" og derett
 
 Besøk Azure-portalen (https://portal.azure.com/), og sørg for at ressursene du opprettet er synlige under riktig abonnement.
 
-I Azure portalen går du inn på Storage-Accounten som er laget tilknyttet funksjonapplikasjonen du har opprettet (du finner den under "All Resources" fra forsiden). Under "Overview" ser du en verdi under "Resource group", som du kopierer og lagrer til senere. Deretter i venstre meny går du inn i "Access Key" og under "Connection String" så kopierer du verdien og lagrer også denne til senere. 
+I Azure portalen går du inn på Storage-Accounten som er laget tilknyttet funksjonsappen du har opprettet (du finner den under "All Resources" fra forsiden). Under "Overview" ser du en verdi under "Resource group", som du kopierer og lagrer til senere. Deretter i venstre meny går du inn i "Access Key" og under "Connection String" så kopierer du verdien og lagrer også denne til senere. 
 
 Naviger så til "Containers" i venstre meny og lag en ny container kalt "samples-workitems". 
 
@@ -100,7 +100,7 @@ az login
 ```
  az account set --subscription mysubscription
 ```
-Endre `mysubscription` med navn eller ID på abonnementet, dette finner du i Azure portalen ved å gå inn på function appen og kopiere ID under «Subscription ID» eller ved å kjøre følgende kommando: 
+Endre `mysubscription` med navn eller ID på abonnementet, dette finner du i Azure portalen ved å gå inn på funksjonsappen og kopiere ID under «Subscription ID» eller ved å kjøre følgende kommando: 
 ```
 az account list --output table
 ```
@@ -143,7 +143,7 @@ Denne koden oppretter en enkel HTML-side som lar brukere laste opp bildefiler ve
 
 Du kan også gjøre koden litt mer komplisert for å vise bildet som skal lastes opp. 
 
-I `<body>`-delen av HTML-filen, kan du legge til følgende:
+Da kan du legge til følgende i `<body>`-delen av HTML-filen:
 
 Først, opprett en `<div>` for å vise det valgte bildet som skal lastes opp. Deretter kan du lage en annen `<div>` for å vise navnene på bildene som er lagret i Azure Blob Storage.
 ```
@@ -249,7 +249,7 @@ def upload():
     container_client =   ContainerClient.from_connection_string(config["azure_storage_connectionstring"], config["images_container_name"])
 ```
 
-I upload-funksjonen legger du til et sjekk om en fil med navn 'image' er inkludert i forespørselen eller om filnavnet er tomt (ingen fil valgt). 
+I `upload`-funksjonen legger du til et sjekk om en fil med navn 'image' er inkludert i forespørselen eller om filnavnet er tomt (ingen fil valgt). 
 
 ```
     if 'image' not in request.files:
@@ -336,12 +336,11 @@ if __name__ == '__main__':
 
 ## Kjøre kode
 
-For å kjøre python-koden må du kjøre følgende kommando. Kontroller at du er i samme mappe som app.py-filen. Som ouput vil du få opp en url i terminalen som vil vise Flask-applikasjonen der du kan laste opp bilder.
+For å kjøre python-koden må du kjøre følgende kommando. Kontroller at du er i samme mappe som app.py-filen. Som ouput vil du få opp en url i terminalen til Flask-applikasjonen der du kan laste opp bilder.
 
 ```
  python -m flask run --no-debug
 ```
-ENDRE HER...
 
 ## Teste Blob Trigger funksjonen
 
